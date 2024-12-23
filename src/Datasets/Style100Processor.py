@@ -282,7 +282,6 @@ class StyleLoader:
 
         self.train_motions = {}
         self.test_motions = {}
-        # 镜像数据集：
         for style in self.style_names[:-10]:
             self.train_motions[style] = {}
             self.test_motions[style] = {}
