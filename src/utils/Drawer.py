@@ -19,11 +19,11 @@ class Drawer:
     def draw(self, *args, channel, feature):
 
         self.ax[channel, feature].plot(*args)
-        self.fig.savefig("draw_func_plot.png")
+        self.fig.savefig("./results/plots/draw_func_plot.png")
 
     def scatter(self, *args, channel, feature):
         self.ax[channel, feature].scatter(*args)
-        self.fig.savefig("scatter_func_plot.png")
+        self.fig.savefig("./results/plots/scatter_func_plot.png")
 
     def show(self):
         plt.show()

@@ -703,5 +703,5 @@ class Application(nn.Module):
             fig = plt.figure()
             plt.scatter(proj[:, 0], proj[:, 1], c=c)
             plt.show()
-            fig.savefig("./forward_func_plot.png")
+            fig.savefig("./results/plots/forward_func_plot.png")
             plt.close()
