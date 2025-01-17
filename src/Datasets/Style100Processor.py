@@ -150,8 +150,8 @@ class StyleLoader:
         f.close()
 
     def load_part_to_binary(self, filename):
-        path = "./"  # self.root_dir
-        f = open(path + "/" + filename + ".dat", "rb")
+        path = self.root_dir
+        f = open(path + filename + ".dat", "rb")
         stat = pickle.load(f)
         f.close()
         return stat
