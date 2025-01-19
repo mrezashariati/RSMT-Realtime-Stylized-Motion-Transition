@@ -117,7 +117,7 @@
   Then run benchmarks with:
 
   ```bash
-  python benchmarks.py --model_path 
+  python benchmark.py --model_path 
   ```
 
   ### General Applications
