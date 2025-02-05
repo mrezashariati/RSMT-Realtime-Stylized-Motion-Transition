@@ -246,7 +246,7 @@ def training_style100_phase():
 
         key = "Flapping"
         sty_key = "Flapping"
-        cid = 61
+        cid = 20
         sid = 4
         print(
             "len(app.data_module.test_set.dataset[key]):",
