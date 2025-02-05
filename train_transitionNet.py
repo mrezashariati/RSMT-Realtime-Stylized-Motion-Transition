@@ -248,16 +248,16 @@ def training_style100_phase():
         sty_key = "Flapping"
         cid = 61
         sid = 4
-        src_motion = app.data_module.test_set.dataset[key][cid]
         print(
             "len(app.data_module.test_set.dataset[key]):",
             len(app.data_module.test_set.dataset[key]),
         )
-        target_motion = app.data_module.test_set_sty.dataset[sty_key][sid]
+        src_motion = app.data_module.test_set.dataset[key][cid]
         print(
             "len(app.data_module.test_set_sty.dataset[sty_key]):",
             len(app.data_module.test_set_sty.dataset[sty_key]),
         )
+        target_motion = app.data_module.test_set_sty.dataset[sty_key][sid]
 
         app.setSource(src_motion)
         app.setTarget(target_motion)
