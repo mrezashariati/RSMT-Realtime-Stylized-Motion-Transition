@@ -253,10 +253,12 @@ def training_style100_phase():
             len(app.data_module.test_set.dataset[key]),
         )
         src_motion = app.data_module.test_set.dataset[key][cid]
+        print("source motion:", src_motion)
         print(
             "len(app.data_module.test_set_sty.dataset[sty_key]):",
             len(app.data_module.test_set_sty.dataset[sty_key]),
         )
+        print("target motion:", target_motion)
         target_motion = app.data_module.test_set_sty.dataset[sty_key][sid]
 
         app.setSource(src_motion)
