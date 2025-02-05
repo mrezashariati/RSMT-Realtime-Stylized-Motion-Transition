@@ -244,8 +244,8 @@ def training_style100_phase():
 
         app = app.float()
 
-        key = "HighKnees"
-        sty_key = "Superman"
+        key = "Flapping"
+        sty_key = "Flapping"
         cid = 61
         sid = 4
         src_motion = app.data_module.test_set.dataset[key][cid]
