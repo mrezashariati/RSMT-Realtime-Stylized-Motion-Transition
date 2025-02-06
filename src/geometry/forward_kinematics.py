@@ -3,13 +3,19 @@ from typing import List
 import torch
 from pytorch3d.transforms import quaternion_multiply, quaternion_apply
 
-def forward_transform_hierarchy(local_transforms: torch.Tensor, level_transforms: List[List[int]],
-                                level_transform_parents: List[List[int]]):
+
+def forward_transform_hierarchy(
+    local_transforms: torch.Tensor,
+    level_transforms: List[List[int]],
+    level_transform_parents: List[List[int]],
+):
     # used to store world transforms
     world_transforms = torch.zeros_like(local_transforms)
 
     # initialize root transforms
-    world_transforms[:, level_transforms[0]] = local_transforms[:, level_transforms[0], :, :]
+    world_transforms[:, level_transforms[0]] = local_transforms[
+        :, level_transforms[0], :, :
+    ]
 
     # then process all children transforms
     for level in range(1, len(level_transforms)):
@@ -18,7 +24,9 @@ def forward_transform_hierarchy(local_transforms: torch.Tensor, level_transforms
         parent_level_transforms = world_transforms[:, parent_bone_indices]
         local_level_transforms = local_transforms[:, local_bone_indices]
         global_matrix = torch.matmul(parent_level_transforms, local_level_transforms)
-        world_transforms[:, local_bone_indices] = global_matrix.type_as(world_transforms)
+        world_transforms[:, local_bone_indices] = global_matrix.type_as(
+            world_transforms
+        )
 
     return world_transforms
 
@@ -38,20 +46,32 @@ def get_transform_matrix(translations: torch.Tensor, rotations: torch.Tensor):
     return out
 
 
-
-
-def forward_kinematics(local_rotations: torch.Tensor, local_offsets: torch.Tensor,
-                       level_joints: List[List[int]], level_joint_parents: List[List[int]]):
+def forward_kinematics(
+    local_rotations: torch.Tensor,
+    local_offsets: torch.Tensor,
+    level_joints: List[List[int]],
+    level_joint_parents: List[List[int]],
+):
     batch_size = local_rotations.shape[0]
     joints_nbr = local_rotations.shape[1]
 
     # compute local transformation matrix for each joints
-    local_transforms = get_transform_matrix(translations=local_offsets.view(-1, 3), rotations=local_rotations.view(-1, 3, 3))
+    local_transforms = get_transform_matrix(
+        translations=local_offsets.view(-1, 3), rotations=local_rotations.view(-1, 3, 3)
+    )
     local_transforms = local_transforms.view(batch_size, joints_nbr, 4, 4)
 
-    return forward_transform_hierarchy(local_transforms, level_joints, level_joint_parents)
-def forward_kinematics_quats(local_rotations: torch.Tensor, local_offsets: torch.Tensor, hip_positions:torch.Tensor,
-                       parents):
+    return forward_transform_hierarchy(
+        local_transforms, level_joints, level_joint_parents
+    )
+
+
+def forward_kinematics_quats(
+    local_rotations: torch.Tensor,
+    local_offsets: torch.Tensor,
+    hip_positions: torch.Tensor,
+    parents,
+):
     """
     Performs FK to retrieve global positions and rotations in quaternion format
     :param local_rotations: tensor of local rotations of shape (..., J, 4)
@@ -77,13 +97,21 @@ def forward_kinematics_quats(local_rotations: torch.Tensor, local_offsets: torch
     global_quats = local_rotations.clone()
     local_offsets = local_offsets.unsqueeze(-3).expand(pos_shape)
     global_positions = [hip_positions]
-    global_quats = [global_quats[...,:1,:]]
-    #global_positions[...,0:1,:] = hip_positions.clone()
+    global_quats = [global_quats[..., :1, :]]
+    # global_positions[...,0:1,:] = hip_positions.clone()
     for level in range(1, len(parents)):
 
-        global_positions.append( quaternion_apply(global_quats[parents[level]], local_offsets[..., level:level+1, :]) + global_positions[parents[level]])
-        global_quats.append( quaternion_multiply(global_quats[parents[level]], local_rotations[..., level:level+1, :]))
-    global_positions = torch.cat(global_positions,dim=-2)
-    global_quats = torch.cat(global_quats,dim=-2)
+        global_positions.append(
+            quaternion_apply(
+                global_quats[parents[level]], local_offsets[..., level : level + 1, :]
+            )
+            + global_positions[parents[level]]
+        )
+        global_quats.append(
+            quaternion_multiply(
+                global_quats[parents[level]], local_rotations[..., level : level + 1, :]
+            )
+        )
+    global_positions = torch.cat(global_positions, dim=-2)
+    global_quats = torch.cat(global_quats, dim=-2)
     return global_positions, global_quats
-

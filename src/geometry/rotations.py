@@ -4,6 +4,7 @@ from src.geometry.vector import cross_product, normalize_vector
 import torch
 import numpy as np
 
+
 # m: batch*3*3
 # out: batch*4*4
 def get_4x4_rotation_matrix_from_3x3_rotation_matrix(m):
@@ -50,17 +51,21 @@ def compute_angle_from_rotation_matrix(m):
 def get_random_rotation_around_axis(axis, return_quaternion=False):
     batch = axis.shape[0]
     axis = normalize_vector(axis)  # batch*3
-    theta = torch.FloatTensor(axis.shape[0]).uniform_(-np.pi, np.pi).type_as(axis)  # [0, pi] #[-180, 180]
+    theta = (
+        torch.FloatTensor(axis.shape[0]).uniform_(-np.pi, np.pi).type_as(axis)
+    )  # [0, pi] #[-180, 180]
     sin = torch.sin(theta)
     qw = torch.cos(theta)
     qx = axis[:, 0] * sin
     qy = axis[:, 1] * sin
     qz = axis[:, 2] * sin
 
-    quaternion = torch.cat((qw.view(batch, 1), qx.view(batch, 1), qy.view(batch, 1), qz.view(batch, 1)), 1)
+    quaternion = torch.cat(
+        (qw.view(batch, 1), qx.view(batch, 1), qy.view(batch, 1), qz.view(batch, 1)), 1
+    )
     matrix = quaternion_to_matrix(quaternion)
 
-    if (return_quaternion == True):
+    if return_quaternion == True:
         return matrix, quaternion
     else:
         return matrix
@@ -103,7 +108,9 @@ def geodesic_loss_matrix3x3_matrix3x3(gt_r_matrix, out_r_matrix):
 
 def geodesic_loss_quat_ortho6d(quaternions, ortho6d):
 
-    assert quaternions.shape[-1] == 4, "quaternions should have the last dimension length be 4"
+    assert (
+        quaternions.shape[-1] == 4
+    ), "quaternions should have the last dimension length be 4"
     assert ortho6d.shape[-1] == 6, "ortho6d should have the last dimension length be 6"
 
     # quat -> matrix3x3

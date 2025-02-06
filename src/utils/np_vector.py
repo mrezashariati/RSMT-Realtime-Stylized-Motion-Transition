@@ -1,16 +1,23 @@
 import numpy
 import numpy as np
 import pytorch3d.transforms
+
 _FLOAT_EPS = np.finfo(np.float32).eps
 _EPS4 = _FLOAT_EPS * 4.0
 _EPS16 = _FLOAT_EPS * 16.0
-def clamp_mean(x,axis):
-    x = np.asarray(x,dtype=np.float64)
-    return np.mean(x,axis=axis)
-def clamp_std(x,axis):
-    x = np.asarray(x,dtype=np.float64)
-    std = np.std(x,axis=axis)
+
+
+def clamp_mean(x, axis):
+    x = np.asarray(x, dtype=np.float64)
+    return np.mean(x, axis=axis)
+
+
+def clamp_std(x, axis):
+    x = np.asarray(x, dtype=np.float64)
+    std = np.std(x, axis=axis)
     return np.where(np.abs(std) < _EPS4, _EPS4, std)
+
+
 def length(x, axis=-1, keepdims=True):
     """
     Computes vector norm along a tensor axis(axes)
@@ -33,7 +40,7 @@ def normalize(x, axis=-1):
     :param eps: epsilon to prevent numerical instabilities
     :return: The normalized tensor
     """
-    x = np.array(x,dtype=np.float64)
+    x = np.array(x, dtype=np.float64)
     res = x / (length(x, axis=axis) + _EPS4)
     return res
 
@@ -64,7 +71,7 @@ def angle_axis_to_quat(angle, axis):
     return q
 
 
-def euler_to_quat(e, order='zyx'):
+def euler_to_quat(e, order="zyx"):
     """
 
     Converts from an euler representation to a quaternion representation
@@ -74,9 +81,10 @@ def euler_to_quat(e, order='zyx'):
     :return: quaternion tensor
     """
     axis = {
-        'x': np.asarray([1, 0, 0], dtype=np.float32),
-        'y': np.asarray([0, 1, 0], dtype=np.float32),
-        'z': np.asarray([0, 0, 1], dtype=np.float32)}
+        "x": np.asarray([1, 0, 0], dtype=np.float32),
+        "y": np.asarray([0, 1, 0], dtype=np.float32),
+        "z": np.asarray([0, 0, 1], dtype=np.float32),
+    }
 
     q0 = angle_axis_to_quat(e[..., 0], axis[order[0]])
     q1 = angle_axis_to_quat(e[..., 1], axis[order[1]])
@@ -150,11 +158,15 @@ def quat_mul(x, y):
     x0, x1, x2, x3 = x[..., 0:1], x[..., 1:2], x[..., 2:3], x[..., 3:4]
     y0, y1, y2, y3 = y[..., 0:1], y[..., 1:2], y[..., 2:3], y[..., 3:4]
 
-    res = np.concatenate([
-        y0 * x0 - y1 * x1 - y2 * x2 - y3 * x3,
-        y0 * x1 + y1 * x0 - y2 * x3 + y3 * x2,
-        y0 * x2 + y1 * x3 + y2 * x0 - y3 * x1,
-        y0 * x3 - y1 * x2 + y2 * x1 + y3 * x0], axis=-1)
+    res = np.concatenate(
+        [
+            y0 * x0 - y1 * x1 - y2 * x2 - y3 * x3,
+            y0 * x1 + y1 * x0 - y2 * x3 + y3 * x2,
+            y0 * x2 + y1 * x3 + y2 * x0 - y3 * x1,
+            y0 * x3 - y1 * x2 + y2 * x1 + y3 * x0,
+        ],
+        axis=-1,
+    )
 
     return res
 
@@ -214,15 +226,19 @@ def quat_between(x, y):
     :param y: tensor of 3D vetcors
     :return: tensor of quaternions
     """
-    res = np.concatenate([
-        np.sqrt(np.sum(x * x, axis=-1) * np.sum(y * y, axis=-1))[..., np.newaxis] +
-        np.sum(x * y, axis=-1)[..., np.newaxis],
-        np.cross(x, y)], axis=-1)
+    res = np.concatenate(
+        [
+            np.sqrt(np.sum(x * x, axis=-1) * np.sum(y * y, axis=-1))[..., np.newaxis]
+            + np.sum(x * y, axis=-1)[..., np.newaxis],
+            np.cross(x, y),
+        ],
+        axis=-1,
+    )
 
     return res
 
 
-def interpolate_local(lcl_r_mb,lcl_q_mb,length,target):
+def interpolate_local(lcl_r_mb, lcl_q_mb, length, target):
     # Extract last past frame and target frame
     start_lcl_r_mb = lcl_r_mb[:, 10 - 1, :, :][:, None, :, :]  # (B, 1, J, 3)
     end_lcl_r_mb = lcl_r_mb[:, target, :, :][:, None, :, :]
@@ -238,10 +254,22 @@ def interpolate_local(lcl_r_mb,lcl_q_mb,length,target):
     # SLERP Local Quats:
     interp_ws = np.linspace(0.0, 1.0, num=n_trans + 2, dtype=np.float32)
     inter_lcl_q_mb = np.stack(
-        [(quat_normalize(quat_slerp(quat_normalize(start_lcl_q_mb), quat_normalize(end_lcl_q_mb), w))) for w in
-         interp_ws], axis=1)
+        [
+            (
+                quat_normalize(
+                    quat_slerp(
+                        quat_normalize(start_lcl_q_mb), quat_normalize(end_lcl_q_mb), w
+                    )
+                )
+            )
+            for w in interp_ws
+        ],
+        axis=1,
+    )
 
     return inter_lcl_r_mb, inter_lcl_q_mb
+
+
 def interpolate_local_(lcl_r_mb, lcl_q_mb, n_past, n_future):
     """
     Performs interpolation between 2 frames of an animation sequence.
@@ -269,19 +297,32 @@ def interpolate_local_(lcl_r_mb, lcl_q_mb, n_past, n_future):
     interp_ws = np.linspace(0.0, 1.0, num=n_trans + 2, dtype=np.float32)
     offset = end_lcl_r_mb - start_lcl_r_mb
 
-    const_trans    = np.tile(start_lcl_r_mb, [1, n_trans + 2, 1, 1])
+    const_trans = np.tile(start_lcl_r_mb, [1, n_trans + 2, 1, 1])
     inter_lcl_r_mb = const_trans + (interp_ws)[None, :, None, None] * offset
 
     # SLERP Local Quats:
     interp_ws = np.linspace(0.0, 1.0, num=n_trans + 2, dtype=np.float32)
     inter_lcl_q_mb = np.stack(
-        [(quat_normalize(quat_slerp(quat_normalize(start_lcl_q_mb), quat_normalize(end_lcl_q_mb), w))) for w in
-         interp_ws], axis=1)
+        [
+            (
+                quat_normalize(
+                    quat_slerp(
+                        quat_normalize(start_lcl_q_mb), quat_normalize(end_lcl_q_mb), w
+                    )
+                )
+            )
+            for w in interp_ws
+        ],
+        axis=1,
+    )
 
     return inter_lcl_r_mb, inter_lcl_q_mb
 
+
 import torch
-def remove_quat_discontinuities(rotations:torch.tensor):
+
+
+def remove_quat_discontinuities(rotations: torch.tensor):
     """
 
     Removing quat discontinuities on the time dimension (removing flips)
@@ -292,12 +333,20 @@ def remove_quat_discontinuities(rotations:torch.tensor):
     rotations = rotations.clone()
     rots_inv = -rotations
     for i in range(1, rotations.shape[1]):
-        replace_mask = torch.sum(rotations[:, i - 1:i, ...] * rotations[:, i:i + 1, ...],
-                                 dim=-1, keepdim=True) < \
-                       torch.sum(rotations[:, i - 1:i, ...] * rots_inv[:, i:i + 1, ...],
-                                 dim=-1, keepdim=True)
+        replace_mask = torch.sum(
+            rotations[:, i - 1 : i, ...] * rotations[:, i : i + 1, ...],
+            dim=-1,
+            keepdim=True,
+        ) < torch.sum(
+            rotations[:, i - 1 : i, ...] * rots_inv[:, i : i + 1, ...],
+            dim=-1,
+            keepdim=True,
+        )
         replace_mask = replace_mask.squeeze(1).type_as(rotations)
-        rotations[:, i, ...] = replace_mask * rots_inv[:, i, ...] + (1.0 - replace_mask) * rotations[:, i, ...]
+        rotations[:, i, ...] = (
+            replace_mask * rots_inv[:, i, ...]
+            + (1.0 - replace_mask) * rotations[:, i, ...]
+        )
     return rotations
 
 
@@ -340,10 +389,10 @@ def extract_feet_contacts(pos, lfoot_idx, rfoot_idx, velfactor=0.02):
     :return: binary tensors of left foot contacts and right foot contacts
     """
     lfoot_xyz = (pos[1:, lfoot_idx, :] - pos[:-1, lfoot_idx, :]) ** 2
-    contacts_l = (np.sqrt(np.sum(lfoot_xyz, axis=-1)) < velfactor)
+    contacts_l = np.sqrt(np.sum(lfoot_xyz, axis=-1)) < velfactor
 
     rfoot_xyz = (pos[1:, rfoot_idx, :] - pos[:-1, rfoot_idx, :]) ** 2
-    contacts_r = (np.sqrt(np.sum(rfoot_xyz, axis=-1)) < velfactor)
+    contacts_r = np.sqrt(np.sum(rfoot_xyz, axis=-1)) < velfactor
 
     # Duplicate the last frame for shape consistency
     contacts_l = np.concatenate([contacts_l, contacts_l[-1:]], axis=0)
@@ -351,14 +400,15 @@ def extract_feet_contacts(pos, lfoot_idx, rfoot_idx, velfactor=0.02):
 
     return contacts_l, contacts_r
 
+
 ##########
 # My own code
 #########
 # axis sequences for Euler angles
 
-def quat_to_mat(quat):
 
-    """ Convert Quaternion to Euler Angles.  See rotation.py for notes """
+def quat_to_mat(quat):
+    """Convert Quaternion to Euler Angles.  See rotation.py for notes"""
     quat = np.asarray(quat, dtype=np.float64)
     assert quat.shape[-1] == 4, "Invalid shape quat {}".format(quat.shape)
 
@@ -381,25 +431,30 @@ def quat_to_mat(quat):
     mat[..., 2, 1] = yZ + wX
     mat[..., 2, 2] = 1.0 - (xX + yY)
     return np.where((Nq > _FLOAT_EPS)[..., np.newaxis, np.newaxis], mat, np.eye(3))
+
+
 def mat_to_euler(mat):
-    """ Convert Rotation Matrix to Euler Angles.  See rotation.py for notes """
+    """Convert Rotation Matrix to Euler Angles.  See rotation.py for notes"""
     mat = np.asarray(mat, dtype=np.float64)
     assert mat.shape[-2:] == (3, 3), "Invalid shape matrix {}".format(mat)
 
     cy = np.sqrt(mat[..., 2, 2] * mat[..., 2, 2] + mat[..., 1, 2] * mat[..., 1, 2])
     condition = cy > _EPS4
     euler = np.empty(mat.shape[:-1], dtype=np.float64)
-    euler[..., 2] = np.where(condition,
-                             -np.arctan2(mat[..., 0, 1], mat[..., 0, 0]),
-                             -np.arctan2(-mat[..., 1, 0], mat[..., 1, 1]))
-    euler[..., 1] = np.where(condition,
-                             -np.arctan2(-mat[..., 0, 2], cy),
-                             -np.arctan2(-mat[..., 0, 2], cy))
-    euler[..., 0] = np.where(condition,
-                             -np.arctan2(mat[..., 1, 2], mat[..., 2, 2]),
-                             0.0)
+    euler[..., 2] = np.where(
+        condition,
+        -np.arctan2(mat[..., 0, 1], mat[..., 0, 0]),
+        -np.arctan2(-mat[..., 1, 0], mat[..., 1, 1]),
+    )
+    euler[..., 1] = np.where(
+        condition, -np.arctan2(-mat[..., 0, 2], cy), -np.arctan2(-mat[..., 0, 2], cy)
+    )
+    euler[..., 0] = np.where(
+        condition, -np.arctan2(mat[..., 1, 2], mat[..., 2, 2]), 0.0
+    )
     return euler
-def quat_to_euler(quat):
-    """ Convert Quaternion to Euler Angles.  See rotation.py for notes """
-    return mat_to_euler(quat_to_mat(quat))
 
+
+def quat_to_euler(quat):
+    """Convert Quaternion to Euler Angles.  See rotation.py for notes"""
+    return mat_to_euler(quat_to_mat(quat))
