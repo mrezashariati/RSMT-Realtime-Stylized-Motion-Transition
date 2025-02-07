@@ -250,27 +250,24 @@ def training_style100_phase():
         app = app.float()
 
         key = "Flapping"
-        sty_key = "Flapping"
-        cid = 42
-        sid = 10
+        sty_key = "OnToesBentForward"
+        cid = 0
+        sid = 0
+        # NOTE: it seems the sc_motion has 61 frames as one of its dimensions. This hints us that this is the data prepared for the motion manifold.
+        # NOTE: it seems the target_motion has 120 frames as one of its dimensions. This hints us that this is the data prepared for the motion sampler.
         print(
             "len(app.data_module.test_set.dataset[key]):",
             len(app.data_module.test_set.dataset[key]),
         )
         src_motion = app.data_module.test_set.dataset[key][cid]
         print("source motion shape:", len(src_motion))
+
         print(
             "len(app.data_module.test_set_sty.dataset[sty_key]):",
             len(app.data_module.test_set_sty.dataset[sty_key]),
         )
         target_motion = app.data_module.test_set_sty.dataset[sty_key][sid]
         print("target motion shape:", len(target_motion))
-
-        print("*" * 10, "\n", src_motion[0])
-        print("len(src_motion[0][0])", len(src_motion[0][0]))
-
-        print("*" * 10, "\n", target_motion[0])
-        print("len(target_motion[0][0])", len(target_motion[0][0]))
 
         # NOTE: what exactly are this source and target motions? what is the data representing?
         app.setSource(src_motion)
