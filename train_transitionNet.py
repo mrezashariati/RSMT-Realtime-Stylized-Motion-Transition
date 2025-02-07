@@ -267,10 +267,10 @@ def training_style100_phase():
         print("target motion shape:", len(target_motion))
 
         print("*" * 10, "\n", src_motion[0])
-        print("len(src_motion[0])", len(src_motion[0]))
+        print("len(src_motion[0][0])", len(src_motion[0][0]))
 
         print("*" * 10, "\n", target_motion[0])
-        print("len(target_motion[0])", len(target_motion[0]))
+        print("len(target_motion[0][0])", len(target_motion[0][0]))
 
         # NOTE: what exactly are this source and target motions? what is the data representing?
         app.setSource(src_motion)
