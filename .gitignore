@@ -21,3 +21,4 @@ test2/
 Experiment
 *.fbx
 .DS_Store
+.vscode

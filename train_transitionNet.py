@@ -146,10 +146,14 @@ def training_style100_phase():
     else:
         pre_trained = None
 
+    # NOTE: 61 frame clips with 20 frames overlap is for the motion manifold
     loader = WindowBasedLoader(61, 21, 1)
-    dt = 1.0 / 30.0
+    dt = (
+        1.0 / 30.0
+    )  # NOTE: maybe subsample motion sequence by 30fps and then augment them
     phase_dim = 10
     phase_file = "+phase_gv10"
+    # NOTE: 120 frames with no overlap is for the style
     style_file_name = phase_file + WindowBasedLoader(120, 0, 1).get_postfix_str()
     if args.test == False:
         """Create the model"""
@@ -166,6 +170,7 @@ def training_style100_phase():
         stat = style_loader.load_part_to_binary("motion_statistics")
         mode = "pretrain"
 
+        # NOTE: the NN in the Figure 2 of the paper.
         model = TransitionNet_phase(
             moe_net,
             data_module.skeleton,
@@ -261,11 +266,16 @@ def training_style100_phase():
         target_motion = app.data_module.test_set_sty.dataset[sty_key][sid]
         print("target motion shape:", len(target_motion))
 
+        print("*" * 10, "\n", src_motion[0])
+
+        print("*" * 10, "\n", target_motion[0])
+
+        # NOTE: what exactly are this source and target motions? what is the data representing?
         app.setSource(src_motion)
         app.setTarget(target_motion)
         source = BVH.read_bvh("source.bvh")
         output = copy.deepcopy(source)
-
+        # NOTE: here t is the duration of the transition. When it is two it means the transition is twice as long as the source
         output.hip_pos, output.quats = app.forward(t=2.0, x=0.0)
         BVH.save_bvh("test_net.bvh", output)
         output.hip_pos, output.quats = app.get_source()

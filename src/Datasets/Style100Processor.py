@@ -156,7 +156,7 @@ class StyleLoader:
         f.close()
         return stat
 
-    # dataset: all motions, the motions are splited into windows
+    # dataset: all motions, the motions are splitted into windows
     def save_dataset(self, filename):
         path = self.root_dir
         f = open(path + "/train" + filename + ".dat", "wb")
