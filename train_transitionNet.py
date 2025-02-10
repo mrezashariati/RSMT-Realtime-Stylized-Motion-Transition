@@ -249,10 +249,10 @@ def training_style100_phase():
 
         app = app.float()
 
-        key = "Flapping"
-        sty_key = "OnToesBentForward"
-        cid = 0
-        sid = 0
+        key = "HighKnees"
+        sty_key = "Penguin"
+        cid = 10
+        sid = 4
         # NOTE: it seems the sc_motion has 61 frames as one of its dimensions. This hints us that this is the data prepared for the motion manifold.
         # NOTE: it seems the target_motion has 120 frames as one of its dimensions. This hints us that this is the data prepared for the motion sampler.
         print(
