@@ -11,7 +11,9 @@ from src.utils.BVH_mod import Skeleton, find_secondary_axis
 
 
 def load_model():
-    model = torch.load("./results/Transitionv2_style100/myResults/141/m_save_model_198")
+    model = torch.load(
+        "/home/student/RSMT-Realtime-Stylized-Motion-Transition/results/Transitionv2_style100/myResults/0/m_save_model_last"
+    )
     return model
 
 
