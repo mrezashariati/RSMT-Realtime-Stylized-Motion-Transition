@@ -27,13 +27,14 @@ class BatchRotateYCenterXZ(torch.nn.Module):
     def __init__(self):
         super(BatchRotateYCenterXZ, self).__init__()
 
+    def forward(self, global_positions, global_quats, ref_frame_id):
         v1 = (
             global_positions[:, ref_frame_id : ref_frame_id + 1, 5:6, :]
             - global_positions[:, ref_frame_id : ref_frame_id + 1, 1:2, :]
         )
         v2 = torch.tensor(
-                [0, 1, 0], dtype=global_positions.dtype, device=global_positions.device
-            )
+            [0, 1, 0], dtype=global_positions.dtype, device=global_positions.device
+        )
         ref_vector = torch.cross(
             v1,
             v2.expand_as(v1),
