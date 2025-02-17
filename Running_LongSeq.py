@@ -231,7 +231,7 @@ if __name__ == "__main__":
     loader = load_dataSet()
     anim = BVH.read_bvh("source.bvh")
     motions = loader.train_motions["LeftHop"]["FW"]
-    tar_motions = loader.train_motions["Neutral"]["FW"]
+    tar_motions = loader.train_motions["LeftHop"]["BW"]
 
     def extract_property(motions):
         X = torch.from_numpy(motions["hip_pos"][0]).unsqueeze(0)
