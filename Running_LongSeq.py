@@ -89,8 +89,8 @@ class RunningLongSeq:
         self.outQ = Q[:, :10].cuda()
         self.outPhase = self.phases[:, :10].cuda()
 
-        tar_id = [50, 100, 150, 200]
-        self.time = [100, 100, 100, 100]
+        tar_id = [50, 100, 150, 200, 250, 300]
+        self.time = [200, 200, 200, 200, 200, 200]
         get_tar_property = lambda property: [
             property[:, tar_id[i] - 2 : tar_id[i]] for i in range(len(tar_id))
         ]
