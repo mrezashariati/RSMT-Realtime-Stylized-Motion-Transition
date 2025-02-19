@@ -72,7 +72,6 @@ class TransformSeq:
 class RunningLongSeq:
     def __init__(self, model, X, Q, A, S, tar_X, tar_Q, pos_offset, skeleton):
         self.window = 60
-        self.source_idx = 0
         self.out_idx = 0
         self.X = X.cuda()
         self.Q = Q.cuda()
@@ -85,20 +84,22 @@ class RunningLongSeq:
         self.transform = TransformSeq()
         self.model = model.cuda()
         self.phases = model.phase_op.phaseManifold(A, S)
+        # NOTE: only preserves the first 10 frames information in outX and outQ nad outPhase
         self.outX = X[:, :10].cuda()
         self.outQ = Q[:, :10].cuda()
         self.outPhase = self.phases[:, :10].cuda()
         # NOTE: key-frame and transition time definition is defined here
-        tar_id = [50, 100, 150, 200, 250, 300]
-        self.time = [200, 200, 200, 200, 200, 200]
+        tar_id = [50, 100]
+        self.time = [200, 200]
         get_tar_property = lambda property: [
             property[:, tar_id[i] - 2 : tar_id[i]] for i in range(len(tar_id))
         ]
+        # NOTE: only preserves the target_frame and it's previous two frames information
         self.X_tar = get_tar_property(self.X)
         self.Q_tar = get_tar_property(self.Q)
-        self.X_tar[3][:, :, :, [0, 2]] = self.X_tar[2][:, :, :, [0]] + 20
+        # NOTE: here the x and z coordinate of a target frame is getting shifted. why?
+        # self.X_tar[3][:, :, :, [0, 2]] = self.X_tar[2][:, :, :, [0]] + 20
         self.tar_id = 0
-        pass
 
     def next_seq(self, length):
         X = self.outX[:, self.out_idx : self.out_idx + 10]
@@ -134,6 +135,7 @@ class RunningLongSeq:
 
     def iteration(self):
         #  time = [40,40,40,40,40,80,40]
+        print("in iteration, len(self.X_tar):", len(self.X_tar))
         for i in range(len(self.X_tar)):
             self.next_seq(self.time[i])
 
@@ -239,15 +241,24 @@ if __name__ == "__main__":
         # NOTE: A and S are used for phase manifold calculation
         A = torch.from_numpy(motions["A"][0]).unsqueeze(0) / 0.1
         S = torch.from_numpy(motions["S"][0]).unsqueeze(0)
-        print(X.shape, Q.shape, A.shape, S.shape)
-        raise Exception
+        # NOTE: shape of tensors: X[1, 1883, 1, 3], Q[1, 1883, 23, 4], A[1, 1882, 10, 1], S[1, 1882, 10, 1]
+        # NOTE: seems like there is a whole animation and not just a single frame
         return X, Q, A, S
 
     X, Q, A, S = extract_property(motions)
     pos_offset = torch.from_numpy(motions["offsets"][0]).unsqueeze(0)
     with torch.no_grad():
         running_machine = RunningLongSeq(
-            model, X, Q, A, S, X, Q, pos_offset, anim.skeleton
+            # NOTE: why the target hip position and quats are the same as the source?
+            model,
+            X,
+            Q,
+            A,
+            S,
+            X,
+            Q,
+            pos_offset,
+            anim.skeleton,
         )
         running_machine.iteration()
         anim.hip_pos, anim.quats = running_machine.get_source()
