@@ -88,7 +88,7 @@ class RunningLongSeq:
         self.outX = X[:, :10].cuda()
         self.outQ = Q[:, :10].cuda()
         self.outPhase = self.phases[:, :10].cuda()
-
+        # NOTE: key-frame and transition time definition is defined here
         tar_id = [50, 100, 150, 200, 250, 300]
         self.time = [200, 200, 200, 200, 200, 200]
         get_tar_property = lambda property: [
@@ -236,8 +236,11 @@ if __name__ == "__main__":
     def extract_property(motions):
         X = torch.from_numpy(motions["hip_pos"][0]).unsqueeze(0)
         Q = torch.from_numpy(motions["quats"][0]).unsqueeze(0)
+        # NOTE: A and S are used for phase manifold calculation
         A = torch.from_numpy(motions["A"][0]).unsqueeze(0) / 0.1
         S = torch.from_numpy(motions["S"][0]).unsqueeze(0)
+        print(X.shape, Q.shape, A.shape, S.shape)
+        raise Exception
         return X, Q, A, S
 
     X, Q, A, S = extract_property(motions)
