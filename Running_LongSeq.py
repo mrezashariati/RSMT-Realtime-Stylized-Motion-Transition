@@ -90,7 +90,7 @@ class RunningLongSeq:
         self.outPhase = self.phases[:, :10].cuda()
         # NOTE: key-frame and transition time definition is defined here
         tar_id = [50, 100]
-        self.time = [200, 1]
+        self.time = [200, 1]  # NOTE: setting it to [200, 1] will produce 201 frames
         get_tar_property = lambda property: [
             property[:, tar_id[i] - 2 : tar_id[i]] for i in range(len(tar_id))
         ]

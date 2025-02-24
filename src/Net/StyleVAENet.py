@@ -26,14 +26,12 @@ class MoeGateDecoder(nn.Module):
         n_joints,
         n_pos_joints,
         condition_size,
-        phase_dim,
         latent_size,
         num_experts,
     ):
-
         super(MoeGateDecoder, self).__init__()
-        out_channels = 6 * n_joints + n_pos_joints * 3  # + phase_dim*4
-        gate_in = phase_dim * 2 + latent_size  # + condition_size
+        out_channels = 6 * n_joints + n_pos_joints * 3
+        gate_in = latent_size  # Removed phase_dim * 2
         self.gate = nn.Sequential(
             nn.Linear(gate_in, 128),
             nn.ELU(),
@@ -50,18 +48,12 @@ class MoeGateDecoder(nn.Module):
         )
         self.act = nn.ModuleList([nn.ELU(), nn.ELU(), nn.ELU()])
         self.mlp = MultipleExpertsLinear(512, out_channels, num_experts)
-        self.phase_dims = phase_dim
+        self.phase_dims = 0  # Assuming no phase_dim
         self.out_channels = out_channels
 
-    def forward(self, latent, condition, phase):
-        """input: N,C->decoder"""
-        """phase: N,C->gate network"""
-        """x: pose+latent"""
-
+    def forward(self, latent, condition):
         x = condition
-        coefficients = self.gate(
-            torch.cat((phase.flatten(-2, -1), latent), dim=-1)
-        )  # self.gate(torch.cat((x,hn),dim=-1))#self.gate(torch.cat((condition,hn,phase.flatten(-2,-1)),dim=-1))#self.gate(torch.cat((hn,condition),dim=-1))##self.gate(torch.cat((phase.flatten(-2,-1),contact),dim=-1))###
+        coefficients = self.gate(latent)
         x = torch.cat((x, latent), dim=-1)
         x = self.linears[0](x, coefficients)
         x = self.act[0](x)
@@ -285,9 +277,7 @@ class StyleVAENet(pl.LightningModule):
             output_mu[:, t - 1] = latent
             kl_loss = kl_loss + self.kl_loss(mu, log_var)
             step += 1
-            pred_pose_, coefficients = self.decoder(
-                latent, condition_no_style, phases[:, t + 1]
-            )
+            pred_pose_, coefficients = self.decoder(latent, condition_no_style)
             pred_l_v, pred_l_rot_v = pred_pose_[..., : len(self.pos_rep_idx) * 3].view(
                 -1, len(self.pos_rep_idx), 3
             ), pred_pose_[..., len(self.pos_rep_idx) * 3 :].view(

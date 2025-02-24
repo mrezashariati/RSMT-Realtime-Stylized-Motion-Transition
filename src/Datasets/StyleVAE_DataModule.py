@@ -133,7 +133,7 @@ class StyleVAE_DataModule(pl.LightningDataModule):
         batch_size=32,
         shuffle=True,
         mirror=0.0,
-        use_phase=True,
+        use_phase=False,
     ):
         super(StyleVAE_DataModule, self).__init__()
         self.loader = dataloader
@@ -144,11 +144,9 @@ class StyleVAE_DataModule(pl.LightningDataModule):
         self.loader.load_skeleton_only()
         self.skeleton = self.loader.skeleton
         self.processor = BatchRotateYCenterXZ()
-        self.phase_op = PhaseOperator(dt)
         self.mirror = mirror
-
         self.batch_mirror = BatchMirror(self.skeleton, mirror_prob=mirror)
-        self.use_phase = use_phase
+        self.use_phase = False
         if style_file_name == None:
             self.use_sty = False
         else:
@@ -215,9 +213,8 @@ class StyleVAE_DataModule(pl.LightningDataModule):
         return cons
 
     def transfer_mannual(
-        self, batch, dataloader_idx: int, use_phase=True, use_sty=True
+        self, batch, dataloader_idx: int, use_phase=False, use_sty=True
     ):
-
         def get_data(batch, idx):
             data = [batch[0][i][idx].squeeze(1) for i in range(len(batch[0]))]
             data = torch.cat(data, dim=0)
