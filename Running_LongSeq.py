@@ -84,17 +84,17 @@ class RunningLongSeq:
         self.transform = TransformSeq()
         self.model = model.cuda()
         self.phases = model.phase_op.phaseManifold(A, S)
-        # NOTE: only preserves the first 10 frames information in outX and outQ nad outPhase
+        # NOTE: only preserves the first 10 frames information in outX and outQ and outPhase
         self.outX = X[:, :10].cuda()
         self.outQ = Q[:, :10].cuda()
         self.outPhase = self.phases[:, :10].cuda()
         # NOTE: key-frame and transition time definition is defined here
         tar_id = [50, 100]
-        self.time = [200, 0]
+        self.time = [200, 1]
         get_tar_property = lambda property: [
             property[:, tar_id[i] - 2 : tar_id[i]] for i in range(len(tar_id))
         ]
-        # NOTE: only preserves the target_frame and it's previous two frames information
+        # NOTE: only preserves the target frame and it's previous two frames information
         self.X_tar = get_tar_property(self.X)
         self.Q_tar = get_tar_property(self.Q)
         # NOTE: here the x and z coordinate of a target frame is getting shifted. why?
@@ -102,15 +102,18 @@ class RunningLongSeq:
         self.tar_id = 0
 
     def next_seq(self, length):
+        # NOTE: For generating new data, treats the last 10 generated frames as a base
         X = self.outX[:, self.out_idx : self.out_idx + 10]
         Q = self.outQ[:, self.out_idx : self.out_idx + 10]
         phases = self.phases[
             :, self.out_idx : self.out_idx + 10
         ]  # self.outPhase[:,self.out_idx:self.out_idx+10]
+        # NOTE: fetches the this round's target frame and its last two frames.
         X_tar = self.X_tar[self.tar_id]  # torch.cat((self.X_tar[self.tar_id]),dim=1)
         Q_tar = self.Q_tar[self.tar_id]  # torch.cat((self.Q_tar[self.tar_id]),dim=1)
         X = torch.cat((X, X_tar), dim=1)
         Q = torch.cat((Q, Q_tar), dim=1)
+        # NOTE: g stands for global
         gp, gq = self.skeleton.forward_kinematics(Q, self.pos_offset, X)
         gp, gq = self.transform.transform(gp, gq)
         gq, gp, pred_phase = synthesize(
