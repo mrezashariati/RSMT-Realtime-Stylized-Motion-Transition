@@ -78,6 +78,7 @@ def add_phase_to_100Style(info):
     style_loader.setup(bloader, mBaseLoader.BasedDataProcessor())
     style_loader.process_from_binary()
 
+    # NOTE: maybe I need to save the data without adding phase to a new dataset
     def add_phase(motions):
         for style in motions.keys():
             print(style + "----------")

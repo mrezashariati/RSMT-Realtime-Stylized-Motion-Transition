@@ -180,6 +180,7 @@ def processTransitionPhaseDatasetForStyle100(window, overlap):
     window_loader = mBaseLoader.WindowBasedLoader(window, overlap, 1)
     processor = None  # MotionPuzzleProcessor()
     style_loader.setup(window_loader, processor)
+    # NOTE: here fails to load the dataset
     style_loader.load_dataset("+phase_gv10")
 
     def split_window(motions):

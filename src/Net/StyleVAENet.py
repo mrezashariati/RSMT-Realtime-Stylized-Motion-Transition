@@ -193,7 +193,6 @@ class StyleVAENet(pl.LightningModule):
             skeleton.num_joints,
             len(self.pos_rep_idx),
             9 + len(self.pos_rep_idx) * 6 + self.skeleton.num_joints * 6,
-            phase_dim,
             latent_size,
             num_experts=8,
         )
