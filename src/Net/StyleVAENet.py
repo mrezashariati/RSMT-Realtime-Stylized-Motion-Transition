@@ -368,9 +368,9 @@ class StyleVAENet(pl.LightningModule):
 
     def shared_forward_single(self, batch, base_epoch=30, edge_mean=21.0):
         N = batch["local_pos"].shape[0] // 2
-        local_pos, local_rots, edge_len, phases = self.transform_batch_to_VAE(batch)
-        A = batch["A"]
-        S = batch["S"]
+        local_pos, local_rots, edge_len, _ = self.transform_batch_to_VAE(
+            batch
+        )  # Ignore phases
 
         src_code = None
         self.length = 25
@@ -378,24 +378,20 @@ class StyleVAENet(pl.LightningModule):
         end_idx = start_idx + self.length
         local_pos = local_pos[:, start_idx:end_idx]
         local_rots = local_rots[:, start_idx:end_idx]
-        phases = phases[:, start_idx:end_idx]
-        A = A[:, start_idx:end_idx]
-        S = S[:, start_idx:end_idx]
-
-        F = S[:, 1:] - S[:, :-1]
-        F = self.phase_op.remove_F_discontiny(F)
-        F = F / self.phase_op.dt
 
         src_pos = local_pos[:N]
         src_rots = local_rots[:N]
         src_edge_len = edge_len[:N]
-        src_phases = phases[:N]
-        src_A = A[:N]
-        src_F = F[:N]
 
         ########################################################################################
-        pred_pos, pred_rot, kl, pred_phase = self.shift_running(
-            src_pos, src_rots, src_phases, src_A, src_F, None, style_code=src_code
+        pred_pos, pred_rot, kl, _ = self.shift_running(
+            src_pos,
+            src_rots,
+            None,
+            None,
+            None,
+            None,
+            style_code=src_code,  # Remove phase-related arguments
         )
         rot_pos = self.rot_to_pos(pred_rot, batch["offsets"][:N], pred_pos[:, :, 0:1])
         pred_pos[:, :, self.rot_rep_idx] = rot_pos[:, :, self.rot_rep_idx]
@@ -420,7 +416,7 @@ class StyleVAENet(pl.LightningModule):
         if epoch >= 1:
             vae_loss["loss"] = (
                 vae_loss["pos"] + vae_loss["rot"] + kl * 0.001 + vae_loss["ct"] * 0.1
-            )  # + (vae_loss["phase"] + vae_loss['A'] + vae_loss['F']+ vae_loss['slerp_phase']) * 0.5
+            )
         else:
             vae_loss["loss"] = vae_loss["pos"] + vae_loss["rot"] + kl * 0.001
 
@@ -547,7 +543,7 @@ class Application(nn.Module):
             )
         batch[0][0].append(motion[3])
         batch = self.data_module.transfer_mannual(
-            batch, 0, use_phase=True, use_sty=False
+            batch, 0, use_phase=False, use_sty=False
         )
         return batch
 

@@ -984,7 +984,7 @@ class Application_phase(nn.Module):
             )
         batch[0][0].append(phase)
         batch = self.data_module.transfer_mannual(
-            batch, 0, use_phase=True, use_sty=False
+            batch, 0, use_phase=False, use_sty=False
         )
         return batch
 
