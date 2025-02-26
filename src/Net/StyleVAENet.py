@@ -229,21 +229,21 @@ class StyleVAENet(pl.LightningModule):
         local_pos = local_pos[:, :, self.pos_rep_idx]
 
         # last_S = Ss[:,0]
-        output_phase = torch.empty(
-            size=(N, T - 2, phases.shape[-2], 2), device=phases.device
-        )
-        output_A = torch.empty(
-            size=(N, T - 2, phases.shape[-2], 1), device=phases.device
-        )
-        output_F = torch.empty(
-            size=(N, T - 2, phases.shape[-2], 1), device=phases.device
-        )
-        output_sphase = torch.empty(
-            size=(N, T - 2, phases.shape[-2], 2), device=phases.device
-        )
+        # output_phase = torch.empty(
+        #     size=(N, T - 2, phases.shape[-2], 2), device=phases.device
+        # )
+        # output_A = torch.empty(
+        #     size=(N, T - 2, phases.shape[-2], 1), device=phases.device
+        # )
+        # output_F = torch.empty(
+        #     size=(N, T - 2, phases.shape[-2], 1), device=phases.device
+        # )
+        # output_sphase = torch.empty(
+        #     size=(N, T - 2, phases.shape[-2], 2), device=phases.device
+        # )
         last_g_pos, last_g_rot = local_pos[:, 1], local_rots[:, 1]
         last_g_v = local_pos[:, 1] - local_pos[:, 0]
-        last_phase = phases[:, 1]
+        # last_phase = phases[:, 1]
 
         kl_loss = 0.0
         step = 0.0
@@ -298,7 +298,7 @@ class StyleVAENet(pl.LightningModule):
             output_pos,
             output_rot,
             kl_loss,
-            [output_phase, output_A, output_F, output_sphase],
+            [None, None, None, None],
         )
 
     def regu_pose(self, pos, edge_len, rot):
