@@ -154,14 +154,14 @@ def training_style100_phase():
     phase_dim = 10
     phase_file = "+phase_gv10"
     # NOTE: 120 frames with no overlap is for the style
-    style_file_name = WindowBasedLoader(120, 0, 1).get_postfix_str()
+    style_file_name = phase_file + WindowBasedLoader(120, 0, 1).get_postfix_str()
     if args.test == False:
         """Create the model"""
         style_loader = StyleLoader()
 
         data_module = StyleVAE_DataModule(
             style_loader,
-            loader.get_postfix_str(),
+            phase_file + loader.get_postfix_str(),
             style_file_name,
             dt=dt,
             batch_size=32,
@@ -212,7 +212,7 @@ def training_style100_phase():
         style_loader = StyleLoader()
         data_module = StyleVAE_DataModule(
             style_loader,
-            loader.get_postfix_str(),
+            phase_file + loader.get_postfix_str(),
             style_file_name,
             dt=dt,
             batch_size=32,
