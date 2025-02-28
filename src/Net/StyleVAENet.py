@@ -628,7 +628,7 @@ class Application(nn.Module):
 
         self.Net.eval()
         with torch.no_grad():
-            loc_pos, loc_rot, edge_len, phases = self.Net.transform_batch_to_VAE(
+            loc_pos, loc_rot, edge_len, _ = self.Net.transform_batch_to_VAE(
                 self.src_batch
             )
             # A = self.src_batch["A"]
@@ -637,8 +637,8 @@ class Application(nn.Module):
             # F = self.Net.phase_op.remove_F_discontiny(F)
             # F = F / self.Net.phase_op.dt
             torch.random.manual_seed(seed)
-            pred_pos, pred_rot, kl, pred_phase = self.Net.shift_running(
-                loc_pos, loc_rot, phases, None, None, None, None
+            pred_pos, pred_rot, kl, _ = self.Net.shift_running(
+                loc_pos, loc_rot, None, None, None, None, None
             )
 
             def draw_projection(pred_mu):
@@ -650,7 +650,7 @@ class Application(nn.Module):
                 plt.scatter(proj[:, 0], proj[:, 1], c=c)
                 plt.show()
 
-            draw_projection(phases[0].squeeze(0).flatten(-2, -1))
+            # draw_projection(phases[0].squeeze(0).flatten(-2, -1))
             loss = {}
             rot_pos = self.Net.rot_to_pos(
                 pred_rot, self.src_batch["offsets"], pred_pos[:, :, 0:1]
