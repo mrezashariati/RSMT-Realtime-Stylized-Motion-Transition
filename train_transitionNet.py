@@ -137,9 +137,6 @@ def training_style100_phase():
     prefix += "_" + data_set
     args, trainer_dict, ckpt_path = create_common_states(prefix)
     moe_net = torch.load(args.moe_model)
-    print(moe_net.keys())
-
-    raise Exception
 
     if args.pretrained == True:
         from src.utils.locate_model import locate_model
