@@ -631,14 +631,14 @@ class Application(nn.Module):
             loc_pos, loc_rot, edge_len, phases = self.Net.transform_batch_to_VAE(
                 self.src_batch
             )
-            A = self.src_batch["A"]
-            S = self.src_batch["S"]
-            F = S[:, 1:] - S[:, :-1]
-            F = self.Net.phase_op.remove_F_discontiny(F)
-            F = F / self.Net.phase_op.dt
+            # A = self.src_batch["A"]
+            # S = self.src_batch["S"]
+            # F = S[:, 1:] - S[:, :-1]
+            # F = self.Net.phase_op.remove_F_discontiny(F)
+            # F = F / self.Net.phase_op.dt
             torch.random.manual_seed(seed)
             pred_pos, pred_rot, kl, pred_phase = self.Net.shift_running(
-                loc_pos, loc_rot, phases, A, F, None, None
+                loc_pos, loc_rot, phases, None, None, None, None
             )
 
             def draw_projection(pred_mu):
