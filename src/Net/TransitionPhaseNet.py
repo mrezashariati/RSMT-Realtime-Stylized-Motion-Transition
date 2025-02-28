@@ -326,6 +326,8 @@ class TransitionNet_phase(pl.LightningModule):
         self.film_generator = IAN_FilmGenerator2(12 * 22)
         self.decoder = moe_decoder.decoder
 
+        raise Exception
+
         self.sigma_target = 0.5
         self.max_tta = past_seq + max_seq_length - 5
         if self.learned_embedding:
