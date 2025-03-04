@@ -707,19 +707,19 @@ class TransitionNet_phase(pl.LightningModule):
     def shared_forward(self, batch, seq, optimizer=None, d_optimizer=None):
         N = batch["local_pos"].shape[0]  # // 2
         style_code = self.get_film_code(batch["sty_pos"][:N], batch["sty_rot"][:N])
-        A = batch["A"]
-        S = batch["S"]
-        F = S[:, 1:] - S[:, :-1]
-        F = self.phase_op.remove_F_discontiny(F)
-        F = F / self.phase_op.dt
+        # A = batch["A"]
+        # S = batch["S"]
+        # F = S[:, 1:] - S[:, :-1]
+        # F = self.phase_op.remove_F_discontiny(F)
+        # F = F / self.phase_op.dt
         local_pos, local_rots, edge_len, phases = self.transform_batch_to_VAE(batch)
         # source
         local_pos = local_pos[:N]
         local_rots = local_rots[:N]
         edge_len = edge_len[:N]
         phases = phases[:N]
-        A = A[:N]
-        F = F[:N]
+        # A = A[:N]
+        # F = F[:N]
         offsets = batch["offsets"][:N]
         noise = None
         start_id = 10
@@ -729,8 +729,8 @@ class TransitionNet_phase(pl.LightningModule):
             local_pos,
             local_rots,
             phases,
-            A,
-            F,
+            None,
+            None,
             style_code,
             noise,
             start_id=start_id,
@@ -766,21 +766,21 @@ class TransitionNet_phase(pl.LightningModule):
             gt_contact, pred_pos[:, 1:] - pred_pos[:, :-1]
         )
 
-        phase_loss = self.phase_loss(
-            phases[:, start_id:target_id],
-            A[:, start_id:target_id],
-            F[:, start_id - 1 : target_id - 1],
-            pred_phase[0][:, :],
-            pred_phase[1][:, :],
-            pred_phase[2][:, :],
-            pred_phase[3],
-        )
+        # phase_loss = self.phase_loss(
+        #     phases[:, start_id:target_id],
+        #     A[:, start_id:target_id],
+        #     F[:, start_id - 1 : target_id - 1],
+        #     pred_phase[0][:, :],
+        #     pred_phase[1][:, :],
+        #     pred_phase[2][:, :],
+        #     pred_phase[3],
+        # )
         loss = {
             "glb_pos": glb_loss,
             "glb_rot": glb_rot_loss,
             "lst_pos": last_pos_loss,
             "lst_rot": last_rot_loss,
-            **phase_loss,
+            # **phase_loss,
             "fv": contact_loss,
         }
         if self.predict_phase:
@@ -798,13 +798,13 @@ class TransitionNet_phase(pl.LightningModule):
             "fv": 0.01,
             "lst_pos": 1.0,
             "lst_rot": 0.5,
-            "phase": 0.5,
-            "A": 0.5,
-            "F": 0.5,
-            "slerp_phase": 0.5,
-            "f_ph": 0.5,
-            "f_A": 0.5,
-            "f_S": 0.5,
+            # "phase": 0.5,
+            # "A": 0.5,
+            # "F": 0.5,
+            # "slerp_phase": 0.5,
+            # "f_ph": 0.5,
+            # "f_A": 0.5,
+            # "f_S": 0.5,
         }
         loss["loss"] = self.weight_sum_loss(loss, new_weight)
 
