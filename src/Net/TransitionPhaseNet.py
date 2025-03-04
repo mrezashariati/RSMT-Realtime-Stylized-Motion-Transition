@@ -294,7 +294,7 @@ class TransitionNet_phase(pl.LightningModule):
         self.past_seq = past_seq
         self.learned_embedding = False
         self.batch_processor = BatchProcessDatav2()
-        self.phase_dim = phase_dim
+        self.phase_dim = 0
         self.dt = dt
         # self.VAE_op = VAE_Pose_Operator(skeleton)
         self.phase_op = PhaseOperator(dt)
