@@ -717,7 +717,8 @@ class TransitionNet_phase(pl.LightningModule):
         local_pos = local_pos[:N]
         local_rots = local_rots[:N]
         edge_len = edge_len[:N]
-        phases = phases[:N]
+        # phases = phases[:N]
+        phases = None
         # A = A[:N]
         # F = F[:N]
         offsets = batch["offsets"][:N]
@@ -783,14 +784,14 @@ class TransitionNet_phase(pl.LightningModule):
             # **phase_loss,
             "fv": contact_loss,
         }
-        if self.predict_phase:
-            pre_phase, pre_A, pre_S = first_phase
-            first_phase_loss = {
-                "f_ph": self.mse_loss(phases[:, start_id - 1], pre_phase),
-                "f_A": self.mse_loss(A[:, start_id - 1], pre_A),
-                "f_S": self.mse_loss(S[:, start_id - 1], pre_S),
-            }
-            loss = {**loss, **first_phase_loss}
+        # if self.predict_phase:
+        #     pre_phase, pre_A, pre_S = first_phase
+        #     first_phase_loss = {
+        #         "f_ph": self.mse_loss(phases[:, start_id - 1], pre_phase),
+        #         "f_A": self.mse_loss(A[:, start_id - 1], pre_A),
+        #         "f_S": self.mse_loss(S[:, start_id - 1], pre_S),
+        #     }
+        #     loss = {**loss, **first_phase_loss}
 
         new_weight = {
             "glb_pos": 1.0,
